@@ -1,12 +1,45 @@
 import asyncio
 from dataclasses import dataclass, field
 from random import choice
+import random
 from typing import Iterable, Self
 from database import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Select, select
 from models import *
 from sqlalchemy.orm import InstrumentedAttribute, load_only, contains_eager
+
+
+async def insert_profiles():
+    generator = get_session()
+    session: AsyncSession = await generator.__anext__()
+    
+    profiles = [
+        Profile(
+            first_name=f"first_name_{i}",
+            last_name=f"last_name_{i}",
+            age=random.randint(10, 100)
+            )
+        for i in range (1, 6)
+    ]
+    session.add_all(profiles)
+    await session.commit()
+
+
+async def insert_users():
+    generator = get_session()
+    session: AsyncSession = await generator.__anext__()
+    
+    users = [
+        User(
+            username=f"user_name_{i}",
+            password=f"password_{i}",
+            profile_id=i
+            )
+        for i in range (1, 6)
+    ]
+    session.add_all(users)
+    await session.commit()
 
 async def insert_posts():
     generator = get_session()
@@ -185,4 +218,4 @@ class SqlAlchemyQueryBuilder:
             self.stmt = self.stmt.options(self.options)
         return self.stmt
     
-asyncio.run(test())
+asyncio.run(insert_comments())
