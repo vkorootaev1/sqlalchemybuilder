@@ -11,28 +11,39 @@ from sqlalchemy.orm.strategy_options import Load
 
 
 @dataclass
-class JoinPart:
-    field_name_parts: list[str] = field(default_factory=list)
+class DFieldPart:
+    name_parts: list[str] = field(default_factory=list)
     
-
+@dataclass
+class DJoinPart:
+    relationship_name_parts: list[str] = field(default_factory=list)
 
 
 class SqlAlchemyQueryBuilder:
     
     @staticmethod
-    def _get_join_parts(
-        field_names: Iterable[str],
-    ) -> list[JoinPart]:
-        parts = []
+    def _get_field_parts(
+        field_names: list[str],
+        separator: str = ".",
+    ) -> list[DFieldPart]:
+        field_parts = []
         for field_name in field_names:
-            field_name_parts = field_name.split(".")
-            part = JoinPart()
-            for field_name_part in field_name_parts:
-                part.field_name_parts.append(field_name_part)
-            parts.append(part)
-            
-        return parts
+            name_parts = field_name.split(separator)
+            part = DFieldPart(name_parts)
+            field_parts.append(part)
+        return field_parts
     
+    @staticmethod
+    def _get_unique_join_parts(
+        field_parts: list[DFieldPart], 
+    ) -> list[DJoinPart]:
+        unique_join_parts = []
+        for field_part in field_parts:
+            relationship_name_parts = field_part.name_parts[:-1]
+            part = DJoinPart(relationship_name_parts)
+            unique_join_parts.append(part)
+        return list(unique_join_parts)
+            
     @staticmethod
     def _get_field(
         model_class: Base,
@@ -57,32 +68,45 @@ class SqlAlchemyQueryBuilder:
             msg = f"'{relationship_name}' is not relationship of model '{model_class.__name__}'"
             raise ValueError (msg)
         return relationship_field
-    
-    def _set_join_to_stmt(
-        self,
-        model_class: Base,
-        join_part: JoinPart,
-    ) -> Select:
-        contains_eager_chain = ()
-        for field_name_part in join_part.field_name_parts:
-            
-            
-                    
+                        
     def _add_joins_to_stmt(
         self,
+        stmt: Select,
         model_class: Base,
-        join_fields_names: Iterable[str] | None = None,
+        field_parts: list[DFieldPart],
     ) -> Select:
-        parts = self._get_join_parts(join_fields_names)
+        join_parts = self._get_unique_join_parts(field_parts)
+        already_joined_models: list[type[Base]] = []
+        for join_part in join_parts:
+            model_class_ = model_class
+            contains_eager_chain_values = []
+            for relationship_name_part in join_part.relationship_name_parts:
+                relationship_field = self._get_relationship_field(
+                    model_class_,
+                    relationship_name_part,
+                )
+                model_class_ = relationship_field.property.mapper.class_
+                if model_class_ not in already_joined_models:
+                    already_joined_models.append(relationship_name_part)
+                    stmt = stmt.outerjoin(relationship_field)
+                contains_eager_chain_values.append(relationship_field)
+            stmt = stmt.options(contains_eager(*contains_eager_chain_values))
         
-    
+        return stmt
+
     def build_query(
         self,
         model_class: Base,
-        join_fields_names: Iterable[str] | None = None,
+        field_names: list[str] | tuple[str] | set[str],
     ) -> Select:
-        ...
-        
+        stmt = select(model_class)
+        field_parts = self._get_field_parts(field_names)
+        stmt = self._add_joins_to_stmt(
+            stmt,
+            model_class,
+            field_parts,
+        )
+        return stmt
         
 async def test():
     generator = get_session()
@@ -99,15 +123,24 @@ async def test():
     # result_orm = result.unique().all()
     # print('1')          
     
-    stmt = (
-        select(Post)
-        .outerjoin(Post.user)
-        .outerjoin(User.profile)
-        .outerjoin(Post.comments)
-        .options(contains_eager(Post.user).load_only(User.username))
-        .options(contains_eager(Post.user, User.profile).load_only(Profile.age))
-        .options(contains_eager(Post.comments).load_only(Comment.is_published))
-    )
+    # stmt = (
+    #     select(Post)
+    #     .outerjoin(Post.user)
+    #     .outerjoin(User.profile)
+    #     .outerjoin(Post.comments)
+    #     .options(contains_eager(Post.user).load_only(User.username))
+    #     .options(contains_eager(Post.user, User.profile).load_only(Profile.age))
+    #     .options(contains_eager(Post.comments).load_only(Comment.is_published))
+    # )
+    
+    # stmt = (
+    #     select(Post)
+    #     .outerjoin(Post.user)
+    #     .outerjoin(User.profile)
+    # )
+    
+    sql = SqlAlchemyQueryBuilder()
+    stmt = sql.build_query(Post, ('id', 'name', 'user.username', 'user.profile.age'))
     
     print(stmt.compile())
 
