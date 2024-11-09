@@ -9,7 +9,6 @@ from models import *
 from sqlalchemy.orm import InstrumentedAttribute, load_only, contains_eager
 from sqlalchemy.orm.strategy_options import Load
 
-
 @dataclass
 class BasePart:
     name: str
