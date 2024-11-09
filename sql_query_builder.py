@@ -54,8 +54,7 @@ class SqlAlchemyQueryBuilder:
     ) -> InstrumentedAttribute:
         field = getattr(model_class, field_name, None)
         if field is None:
-            msg = f"'{model_class.__name__}' does not contain field '{
-                field_name}'"
+            msg = f"'{model_class.__name__}' does not contain field '{field_name}'"
             raise ValueError(msg)
         return field
 
@@ -66,12 +65,10 @@ class SqlAlchemyQueryBuilder:
     ) -> InstrumentedAttribute:
         relationship_field = getattr(model_class, relationship_name, None)
         if relationship_field is None:
-            msg = f"'{model_class.__name__}' does not contain relationship '{
-                relationship_name}'"
+            msg = f"'{model_class.__name__}' does not contain relationship '{relationship_name}'"
             raise ValueError(msg)
         if not relationship_field.property._is_relationship:
-            msg = f"'{relationship_name}' is not relationship of model '{
-                model_class.__name__}'"
+            msg = f"'{relationship_name}' is not relationship of model '{model_class.__name__}'"
             raise ValueError(msg)
         return relationship_field
 
