@@ -41,9 +41,8 @@ class SqlAlchemyQueryBuilder:
     def _get_operators_mapping() -> dict[str, str]:
         """Возвращает соответствие Sql-операторов.
         
-        Description:
-            Возвращает соответствие между Sql-оператором, который необходимо передавать
-                в построитель запросов и Sql-оператором синтаксиса SqlAlchemy.
+        Возвращает соответствие между Sql-оператором, который необходимо передавать
+            в построитель запросов и Sql-оператором синтаксиса SqlAlchemy.
             
         Extra:
             Можно добавить дополнительные Sql-операторы, которые представлены в SqlAlchemy.
@@ -116,8 +115,7 @@ class SqlAlchemyQueryBuilder:
     ) -> Select:
         """Возвращает первоначальный запрос. 
         
-        Description:
-            Инициализация первоначального запроса по переданной SqlAlchemy модели.
+        Инициализация первоначального запроса по переданной SqlAlchemy модели.
             
         Args:
             model_class (type[Base]): класс модели SqlAlchemy.
@@ -294,8 +292,7 @@ class SqlAlchemyQueryBuilder:
     ) -> dict[type[Base], list[InstrumentedAttribute] | str]:
         """Возвращает очищенные соответствие между моделями SqlAlchemy и выбираемыми полями.
         
-        Description:
-            Если для модели выбраны и все поля, и некоторые поля, то будут выбраны все поля.
+        Если для модели выбраны и все поля, и некоторые поля, то будут выбраны все поля.
         
         Args:
             model_selectable_fields_mapping: dict[type[Base], list[InstrumentedAttribute | str]]: 
