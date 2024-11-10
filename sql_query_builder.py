@@ -642,7 +642,7 @@ class SqlAlchemyQueryBuilder:
             limit (int | None = None): 
                 ограничение количества выгружаемых строк.
             offset (int | None = None): 
-                показтель смещения.
+                показатель смещения.
                 
         Returns:
             Select: построенный запрос.
