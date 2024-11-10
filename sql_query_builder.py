@@ -240,7 +240,7 @@ class SqlAlchemyQueryBuilder:
         Args:
             filters (dict[str, Any]): словарь, хранящий части фильтрации.
                 Ключом словаря является наименование поле с sql-оператором в строком представлении.
-                Ключом является значение, по которому нужно фильтровать.
+                Значением словаря является значение, по которому нужно фильтровать.
         
         Returns:
             list[PreparedFilterField] - список подготовленных частей фильтрации.
@@ -530,7 +530,7 @@ class SqlAlchemyQueryBuilder:
             model_class (type[Base]): класс модели SqlAlchemy.
             filters (dict[str, Any] | None): словарь, хранящий части фильтрации.
                 Ключом словаря является наименование поле с sql-оператором в строком представлении.
-                Ключом является значение, по которому нужно фильтровать.
+                Значением словаря является значение, по которому нужно фильтровать.
         
         Returns:
             Select: обновленный запрос.
@@ -624,6 +624,29 @@ class SqlAlchemyQueryBuilder:
         limit: int | None = None,
         offset: int | None = None,
     ) -> Select:
+        """Возвращает построенный запрос по переданным параметрам.
+        
+        Документация по использованию построителя запроса размещена в репозитории 'backend/fastapi' 
+            в файле 'sql_builder_doc.md'.
+        
+        Args:
+            model_class (type[Base]): 
+                модель SqlAlchemy, от который будет осуществляться построение запроса.
+            fields (list[str] | tuple[str] | set[str] | None = None): 
+                список выбираемых полей в строковом представлении.
+            filters (dict[str, Any] | None = None): словарь, хранящий части фильтрации.
+                Ключом словаря является наименование поле с sql-оператором в строком представлении.
+                Значением словаря является значение, по которому нужно фильтровать.
+            order_by (list[str] | tuple[str] | set[str] | None = None): 
+                список полей сортировки в строковом представлении.
+            limit (int | None = None): 
+                ограничение количества выгружаемых строк.
+            offset (int | None = None): 
+                показтель смещения.
+                
+        Returns:
+            Select: построенный запрос.
+        """
         stmt = self._generate_init_stmt(model_class)
         stmt = self._add_joins_and_selectable_fields(
             stmt,
