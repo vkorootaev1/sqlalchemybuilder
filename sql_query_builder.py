@@ -52,11 +52,15 @@ class SqlAlchemyQueryBuilder:
             "le": "__le__",
             "lt": "__lt__",
             "ne": "__ne__",
+            "ge": "__ge__",
+            "ge": "__gt__",
             "between": "between",
             "icontains": "icontains",
             "in": "in_",
             "ilike": "ilike",
             "not_in": "not_in",
+            "is_not": "is_not",
+            "is": "is_",
         }
 
     @staticmethod
@@ -577,11 +581,11 @@ class SqlAlchemyQueryBuilder:
         stmt: Select,
         limit: int | None
     ) -> Select:
-        """Добавление в запрос ограничения количества выгружаемых строк.
+        """Добавление в запрос ограничения количества выгружаемых записей.
             
         Args:
             stmt (Select): запрос.
-            limit (int | None): количество выгружаемых строк.
+            limit (int | None): показатель количества выгружаемых записей.
 
         Returns:
             Select: обновленный запрос.
@@ -637,7 +641,7 @@ class SqlAlchemyQueryBuilder:
             order_by (list[str] | tuple[str] | set[str] | None = None): 
                 список полей сортировки в строковом представлении.
             limit (int | None = None): 
-                ограничение количества выгружаемых строк.
+                показатель количества выгружаемых записей.
             offset (int | None = None): 
                 показатель смещения.
                 
@@ -702,11 +706,11 @@ async def test():
     
     # stmt = sql.build_query(Post, ("*", "user.username", "user.password", "user.profile.age", "user.profile.last_name"))
     fields = ('title', 'user.username', 'user.profile.age', 'user.profile.last_name')
-    filters = {'user.profile.age.in': [20, 40]}
+    filters = {'user.profile.age.in': [12, 36], 'user.profile.last_name.is': None}
     order_by = ('user.profile.age', "-user.profile.first_name")
     limit = 300
     offset = 186
-    stmt = sql.build_query(Post, fields, filters, order_by=order_by, limit=limit, offset=offset)
+    stmt = sql.build_query(Post, filters={'user_id.in': [1, 2, ]})
 
     # a = getattr(Profile.age, "in_")
     # filter = a([40, 50])
